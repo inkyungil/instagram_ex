@@ -17,6 +17,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// 버킷 클래스
+class Bucket {
+  String job; // 할 일
+  bool isDone; // 완료 여부
+
+  Bucket(this.job, this.isDone); // 생성자
+}
+
 /// 홈 페이지
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -26,7 +34,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> bucketList = ['여행가기']; // 전체 버킷리스트 목록
+  //List<String> bucketList = ['여행가기']; // 전체 버킷리스트 목록
+  List<Bucket> bucketList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +48,17 @@ class _HomePageState extends State<HomePage> {
           : ListView.builder(
               itemCount: bucketList.length, // bucketList 개수 만큼 보여주기
               itemBuilder: (context, index) {
-                String bucket = bucketList[index]; // index에 해당하는 bucket 가져오기
+                Bucket bucket = bucketList[index]; // index에 해당하는 bucket 가져오기
                 return ListTile(
                   // 버킷 리스트 할 일
                   title: Text(
-                    bucket,
+                    bucket.job,
                     style: TextStyle(
                       fontSize: 24,
+                      color: bucket.isDone ? Colors.grey : Colors.black,
+                      decoration: bucket.isDone
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
                     ),
                   ),
                   // 삭제 아이콘 버튼
@@ -53,12 +66,18 @@ class _HomePageState extends State<HomePage> {
                     icon: Icon(CupertinoIcons.delete),
                     onPressed: () {
                       // 삭제 버튼 클릭시
-                      print('$bucket : 삭제하기');
+                      //print('$bucket : 삭제하기');
+
+                      showDeleteDialog(context, index);
                     },
                   ),
                   onTap: () {
                     // 아이템 클릭시
-                    print('$bucket : 클릭 됨');
+                    //print('$bucket : 클릭 됨');
+
+                    setState(() {
+                      bucket.isDone = !bucket.isDone;
+                    });
                   },
                 );
               },
@@ -74,11 +93,45 @@ class _HomePageState extends State<HomePage> {
           //print(job);
           if (job != null) {
             setState(() {
-              bucketList.add(job);
+              Bucket newBucket = Bucket(job, false);
+              bucketList.add(newBucket);
             });
           }
         },
       ),
+    );
+  }
+
+  void showDeleteDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("정말로 삭제하시겠습니까?"),
+          actions: [
+            // 취소 버튼
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("취소"),
+            ),
+            // 확인 버튼
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  bucketList.removeAt(index);
+                });
+                Navigator.pop(context);
+              },
+              child: Text(
+                "확인",
+                style: TextStyle(color: Colors.pink),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
